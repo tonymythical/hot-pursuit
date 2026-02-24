@@ -146,7 +146,20 @@ class Enemy {
             bounding_box(create_bounding_box(sprite, size))
         {}
 
-        void update() {
+        void update(Player& player) {
+            // Move enemy towards player
+            if(player.sprite.x() > sprite.x()) {
+                sprite.set_x(sprite.x() + speed);
+            } else if(player.sprite.x() < sprite.x()) {
+                sprite.set_x(sprite.x() - speed);
+            }
+
+            if(player.sprite.y() > sprite.y()) {
+                sprite.set_y(sprite.y() + speed);
+            } else if(player.sprite.y() < sprite.y()) {
+                sprite.set_y(sprite.y() - speed);
+            }
+
             bounding_box = create_bounding_box(sprite, size);
         }
 
@@ -169,14 +182,18 @@ int main() {
 
     while(true) {
         player.update();
-        enemy.update();
+        enemy.update(player);
 
         // Reset the current score and player position if the player collides with enemy
         if(enemy.bounding_box.intersects(player.bounding_box)) {
             scoreDisplay.resetScore();
             player.sprite.set_x(-50);
             player.sprite.set_y(22);
+            enemy.sprite.set_x(-20);
+            enemy.sprite.set_y(22);
         }
+
+        
 
         // Update the scores and disaply them
         scoreDisplay.update();
