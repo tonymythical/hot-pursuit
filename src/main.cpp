@@ -2,6 +2,7 @@
 #include <bn_display.h>
 #include <bn_keypad.h>
 #include <bn_rect.h>
+#include <bn_random.h>
 #include <bn_size.h>
 #include <bn_string.h>
 #include <bn_sprite_ptr.h>
@@ -30,6 +31,9 @@ static constexpr int SCORE_Y = -70;
 // High score location
 static constexpr int HIGH_SCORE_X = -70;
 static constexpr int HIGH_SCORE_Y = -70;
+
+// Random generator
+bn::random random;
 
 /**
  * Creates a rectangle centered at a sprite's location with a given size.
@@ -189,8 +193,8 @@ int main() {
             scoreDisplay.resetScore();
             player.sprite.set_x(-50);
             player.sprite.set_y(22);
-            enemy.sprite.set_x(-20);
-            enemy.sprite.set_y(22);
+            enemy.sprite.set_x(random.get_int(MIN_X, MAX_X));
+            enemy.sprite.set_y(random.get_int(MIN_Y, MAX_Y));
         }
 
         
