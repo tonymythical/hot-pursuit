@@ -131,6 +131,13 @@ class Player {
                 sprite.set_y(sprite.y() + speed);
             }
 
+            // Screen boundaries for player.
+            bn::fixed x_limit = (bn::display::width() / 2) - (size.width() / 2);
+            bn::fixed y_limit = (bn::display::height() / 2) - (size.height() / 2);
+
+            sprite.set_x(bn::clamp(sprite.x(), -x_limit, x_limit));
+            sprite.set_y(bn::clamp(sprite.y(), -y_limit, y_limit));
+
             bounding_box = create_bounding_box(sprite, size);
         }
 
@@ -167,6 +174,13 @@ class Enemy {
             bounding_box = create_bounding_box(sprite, size);
         }
 
+        void respawn() {
+            // Jump to a random position on screen
+            int new_x = random.get_int(MIN_X + 10, MAX_X - 10);
+            int new_y = random.get_int(MIN_Y + 10, MAX_Y - 10);
+            sprite.set_position(new_x, new_y);
+        }
+
         bn::sprite_ptr sprite;
         bn::fixed speed;
         bn::size size;
@@ -182,7 +196,7 @@ int main() {
     // Create a player and initialize it
     Player player = Player(-50, 22, 3.5, PLAYER_SIZE);
 
-    Enemy enemy = Enemy(-20, 22, 1.0, ENEMY_SIZE);
+    Enemy enemy = Enemy(-20, 22, 0.5, ENEMY_SIZE);
 
     while(true) {
         player.update();
@@ -193,8 +207,9 @@ int main() {
             scoreDisplay.resetScore();
             player.sprite.set_x(-50);
             player.sprite.set_y(22);
-            enemy.sprite.set_x(random.get_int(MIN_X, MAX_X));
-            enemy.sprite.set_y(random.get_int(MIN_Y, MAX_Y));
+
+            // Respawn call
+            enemy.respawn();
         }
 
         
