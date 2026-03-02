@@ -196,20 +196,31 @@ int main() {
     // Create a player and initialize it
     Player player = Player(-50, 22, 3.5, PLAYER_SIZE);
 
-    Enemy enemy = Enemy(-20, 22, 0.5, ENEMY_SIZE);
+    static constexpr int MAX_ENEMIES = 4;
+    bn::vector<Enemy, MAX_ENEMIES> enemies;
+
+    enemies.push_back(Enemy(60, 40, 0.4, ENEMY_SIZE));
+    enemies.push_back(Enemy(-60, -40, 0.6, ENEMY_SIZE));
+    enemies.push_back(Enemy(0, -60, 0.3, ENEMY_SIZE));
 
     while(true) {
         player.update();
-        enemy.update(player);
-
+        
         // Reset the current score and player position if the player collides with enemy
-        if(enemy.bounding_box.intersects(player.bounding_box)) {
-            scoreDisplay.resetScore();
-            player.sprite.set_x(-50);
-            player.sprite.set_y(22);
+        for(Enemy& enemy : enemies) {
+            enemy.update(player);
+            if(enemy.bounding_box.intersects(player.bounding_box)) {
+                scoreDisplay.resetScore();
+                player.sprite.set_x(-50);
+                player.sprite.set_y(22);
 
-            // Respawn call
-            enemy.respawn();
+                for(Enemy& e : enemies) {
+                    e.respawn();
+                }
+
+                break; // Stop the check
+            }
+
         }
 
         
