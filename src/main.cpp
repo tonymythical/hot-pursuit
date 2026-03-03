@@ -12,6 +12,9 @@
 #include "bn_sprite_items_dot.h"
 #include "bn_sprite_items_square.h"
 
+#include "scoredisplay.h"
+#include "player.h"
+
 // Width and height of the the player bounding box
 static constexpr bn::size PLAYER_SIZE = {8, 8};
 static constexpr bn::size ENEMY_SIZE = {8, 8};
@@ -53,100 +56,6 @@ bn::rect create_bounding_box(bn::sprite_ptr sprite, bn::size box_size) {
  * Score starts a 0 and is increased each time update is called, and reset to 0 when resetScore is
  * called. High score tracks the highest score ever reached.
 */
-class ScoreDisplay {
-    public:
-        ScoreDisplay() :
-            score(0), // Start score at 0
-            high_score(0), // Start high score at 0
-            score_sprites(bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS>()), // Start with empty vector for score sprites
-            text_generator(bn::sprite_text_generator(common::fixed_8x16_sprite_font)) // Use a new text generator
-        {
-
-        }
-
-        /**
-         * Increases score by 1 and updates high score if needed. Displays score and high score.
-         */
-        void update() {
-            // increase score and update high score if this is the new highest
-            score++;
-            if(score > high_score) {
-                high_score = score;
-            }
-
-            // Stop displaying previous scores
-            score_sprites.clear();
-
-            // Display new scores
-            show_number(SCORE_X, SCORE_Y, score);
-            show_number(HIGH_SCORE_X, HIGH_SCORE_Y, high_score);
-        }
-
-        /**
-         * Displays a number at the given position
-         */
-        void show_number(int x, int y, int number) {
-            // Convert number to a string and then display it
-            bn::string<MAX_SCORE_CHARS> number_string = bn::to_string<MAX_SCORE_CHARS>(number);
-            text_generator.generate(x, y, number_string, score_sprites);
-        }
-
-        /**
-         * Sets score back to 0. Does NOT reset high score.
-         */
-        void resetScore() {
-            score = 0;
-        }
-
-        int score; // current score
-        int high_score; // best core
-        bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites; // Sprites to display scores
-        bn::sprite_text_generator text_generator; // Text generator for scores
-};
-
-class Player {
-    public:
-        Player(int starting_x, int starting_y, bn::fixed player_speed, bn::size player_size) : 
-            sprite(bn::sprite_items::dot.create_sprite(starting_x, starting_y)), 
-            speed(player_speed),
-            size(player_size),
-            bounding_box(create_bounding_box(sprite, size))
-        {}
-
-        /**
-         * Update the position and bounding box of the player based on d-pad movement.
-         */
-        void update() {
-            if(bn::keypad::right_held()) {
-                sprite.set_x(sprite.x() + speed);
-            }
-            if(bn::keypad::left_held()) {
-                sprite.set_x(sprite.x() - speed);
-            }
-            // TODO: Add logic for up and down
-            if(bn::keypad::up_held()) {
-                sprite.set_y(sprite.y() - speed);
-            }
-            if(bn::keypad::down_held()) {
-                sprite.set_y(sprite.y() + speed);
-            }
-
-            // Screen boundaries for player.
-            bn::fixed x_limit = (bn::display::width() / 2) - (size.width() / 2);
-            bn::fixed y_limit = (bn::display::height() / 2) - (size.height() / 2);
-
-            sprite.set_x(bn::clamp(sprite.x(), -x_limit, x_limit));
-            sprite.set_y(bn::clamp(sprite.y(), -y_limit, y_limit));
-
-            bounding_box = create_bounding_box(sprite, size);
-        }
-
-        // Create the sprite. This will be moved to a constructor
-        bn::sprite_ptr sprite;
-        bn::fixed speed; // The speed of the player
-        bn::size size; // The width and height of the sprite
-        bn::rect bounding_box; // The rectangle around the sprite for checking collision
-};
 
 class Enemy {
     public:
@@ -191,10 +100,10 @@ int main() {
     bn::core::init();
 
     // Create a new score display
-    ScoreDisplay scoreDisplay = ScoreDisplay();
+    ScoreDisplay scoreDisplay;
 
     // Create a player and initialize it
-    Player player = Player(-50, 22, 3.5, PLAYER_SIZE);
+    Player player(-50, 22, 3.5, PLAYER_SIZE);
 
     static constexpr int MAX_ENEMIES = 8;
     bn::vector<Enemy, MAX_ENEMIES> enemies;
