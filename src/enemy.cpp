@@ -2,6 +2,8 @@
 #include "player.h"
 #include <bn_random.h>
 #include <bn_display.h>
+#include <bn_math.h>
+#include <bn_vector.h>
 
 #include "bn_sprite_items_square.h"
 
@@ -45,4 +47,26 @@ void Enemy::respawn() {
 void Enemy::update_bounding_box() {
     bounding_box.set_position(sprite.x().round_integer(), 
                                sprite.y().round_integer());
+}
+
+void Enemy::avoid_others(const bn::vector<Enemy, 8>& enemies) {
+    for(const Enemy& other : enemies) {
+        if(&other == this) {
+            continue;
+        }
+
+        bn::fixed dx = sprite.x() - other.sprite.x();
+        bn::fixed dy = sprite.y() - other.sprite.y();
+        
+        if(bn::abs(dx) < 12 && bn::abs(dy) < 12) {
+            bn::fixed push_force = 0.8; 
+
+            if(dx > 0) sprite.set_x(sprite.x() + push_force);
+            else sprite.set_x(sprite.x() - push_force);
+
+            if(dy > 0) sprite.set_y(sprite.y() + push_force);
+            else sprite.set_y(sprite.y() - push_force);
+        }
+    }
+    update_bounding_box();
 }

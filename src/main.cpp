@@ -87,13 +87,13 @@ int main() {
             int ry = random.get_int(MIN_Y + 10, MAX_Y - 10);
             
             enemies.push_back(Enemy(rx, ry, 0.5, ENEMY_SIZE));
-            frame_counter = 0; 
+            frame_counter = 0;
         }
 
         bool player_hit = false;
-
         for(Enemy& enemy : enemies) {
             enemy.update(player);
+            enemy.avoid_others(enemies);
 
             if(enemy.bounding_box.intersects(player.bounding_box)) {
                 player_hit = true;
@@ -101,7 +101,6 @@ int main() {
             }
         }
 
-        // Reset.
         if(player_hit) {
             scoreDisplay.resetScore();
             player.sprite.set_position(-50, 22);
@@ -110,34 +109,12 @@ int main() {
                 enemies.pop_back();
             }
 
-            // Move the remaining enemy to a random spot to prevent collision
             enemies[0].respawn();
-            frame_counter = 0;
-        }
-        
-        // Reset the current score and player position if the player collides with enemy
-        for(Enemy& enemy : enemies) {
-            enemy.update(player);
-            if(enemy.bounding_box.intersects(player.bounding_box)) {
-                scoreDisplay.resetScore();
-                player.sprite.set_x(-50);
-                player.sprite.set_y(22);
 
-                for(Enemy& e : enemies) {
-                    e.respawn();
-                }
-
-                break; // Stop the check
-            }
-
+            frame_counter = 0; 
         }
 
-        
-
-        // Update the scores and disaply them
         scoreDisplay.update();
-        
-
         bn::core::update();
     }
 }

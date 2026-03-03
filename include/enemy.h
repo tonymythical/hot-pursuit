@@ -5,6 +5,7 @@
 #include <bn_rect.h>
 #include <bn_size.h>
 #include <bn_fixed.h>
+#include <bn_vector.h>
 
 class Player;
 
@@ -16,12 +17,14 @@ class Enemy {
 
         void respawn();
 
+        void avoid_others(const bn::vector<Enemy, 8>& enemies);
+        
         bn::sprite_ptr sprite;
         bn::fixed speed;
         bn::size size;
         bn::rect bounding_box;
-
-    private:
+        
+        private:
         void update_bounding_box();
 };
 
