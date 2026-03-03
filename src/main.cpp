@@ -196,15 +196,53 @@ int main() {
     // Create a player and initialize it
     Player player = Player(-50, 22, 3.5, PLAYER_SIZE);
 
-    static constexpr int MAX_ENEMIES = 4;
+    static constexpr int MAX_ENEMIES = 8;
     bn::vector<Enemy, MAX_ENEMIES> enemies;
 
     enemies.push_back(Enemy(60, 40, 0.4, ENEMY_SIZE));
-    enemies.push_back(Enemy(-60, -40, 0.6, ENEMY_SIZE));
-    enemies.push_back(Enemy(0, -60, 0.3, ENEMY_SIZE));
+    // enemies.push_back(Enemy(-60, -40, 0.6, ENEMY_SIZE));
+    // enemies.push_back(Enemy(0, -60, 0.3, ENEMY_SIZE));
+
+    // frame counter to track
+    int frame_counter = 0;
+    const int SPAWN_RATE = 300;
 
     while(true) {
         player.update();
+        frame_counter++;
+
+        if(frame_counter >= SPAWN_RATE && !enemies.full()) {
+            int rx = random.get_int(MIN_X + 10, MAX_X - 10);
+            int ry = random.get_int(MIN_Y + 10, MAX_Y - 10);
+            
+            enemies.push_back(Enemy(rx, ry, 0.5, ENEMY_SIZE));
+            frame_counter = 0; 
+        }
+
+        bool player_hit = false;
+
+        for(Enemy& enemy : enemies) {
+            enemy.update(player);
+
+            if(enemy.bounding_box.intersects(player.bounding_box)) {
+                player_hit = true;
+                break; 
+            }
+        }
+
+        // Reset.
+        if(player_hit) {
+            scoreDisplay.resetScore();
+            player.sprite.set_position(-50, 22);
+
+            while(enemies.size() > 1) {
+                enemies.pop_back();
+            }
+
+            // Move the remaining enemy to a random spot to prevent collision
+            enemies[0].respawn();
+            frame_counter = 0;
+        }
         
         // Reset the current score and player position if the player collides with enemy
         for(Enemy& enemy : enemies) {
