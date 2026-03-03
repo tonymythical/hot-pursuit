@@ -14,6 +14,7 @@
 
 #include "scoredisplay.h"
 #include "player.h"
+#include "enemy.h"
 
 // Width and height of the the player bounding box
 static constexpr bn::size PLAYER_SIZE = {8, 8};
@@ -56,45 +57,6 @@ bn::rect create_bounding_box(bn::sprite_ptr sprite, bn::size box_size) {
  * Score starts a 0 and is increased each time update is called, and reset to 0 when resetScore is
  * called. High score tracks the highest score ever reached.
 */
-
-class Enemy {
-    public:
-        Enemy(int starting_x, int starting_y, bn::fixed enemy_speed, bn::size enemy_size) : 
-            sprite(bn::sprite_items::square.create_sprite(starting_x, starting_y)),
-            speed(enemy_speed),
-            size(enemy_size),
-            bounding_box(create_bounding_box(sprite, size))
-        {}
-
-        void update(Player& player) {
-            // Move enemy towards player
-            if(player.sprite.x() > sprite.x()) {
-                sprite.set_x(sprite.x() + speed);
-            } else if(player.sprite.x() < sprite.x()) {
-                sprite.set_x(sprite.x() - speed);
-            }
-
-            if(player.sprite.y() > sprite.y()) {
-                sprite.set_y(sprite.y() + speed);
-            } else if(player.sprite.y() < sprite.y()) {
-                sprite.set_y(sprite.y() - speed);
-            }
-
-            bounding_box = create_bounding_box(sprite, size);
-        }
-
-        void respawn() {
-            // Jump to a random position on screen
-            int new_x = random.get_int(MIN_X + 10, MAX_X - 10);
-            int new_y = random.get_int(MIN_Y + 10, MAX_Y - 10);
-            sprite.set_position(new_x, new_y);
-        }
-
-        bn::sprite_ptr sprite;
-        bn::fixed speed;
-        bn::size size;
-        bn::rect bounding_box;
-};
 
 int main() {
     bn::core::init();
